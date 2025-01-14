@@ -6,11 +6,13 @@ import subprocess
 import configparser
 from pathlib import Path
 
+CREDENTIALS_PATH = os.getenv("AWS_SHARED_CREDENTIALS_FILE") or "~/.aws/credentials"
+
 
 def get_long_term_credentials():
-    """Read long term credentials from ~/.aws/credentials"""
+    """Read long term credentials from aws credentials file"""
     config = configparser.ConfigParser()
-    config.read(os.path.expanduser('~/.aws/credentials'))
+    config.read(os.path.expanduser(CREDENTIALS_PATH))
     return {
         'aws_access_key_id': config['default-long_term']['aws_access_key_id'],
         'aws_secret_access_key': config['default-long_term']['aws_secret_access_key']
@@ -18,16 +20,16 @@ def get_long_term_credentials():
 
 
 def update_credentials(credentials):
-    """Update ~/.aws/credentials with new session credentials"""
+    """Update credentials file with new session credentials"""
     config = configparser.ConfigParser()
-    config.read(os.path.expanduser('~/.aws/credentials'))
+    config.read(os.path.expanduser(CREDENTIALS_PATH))
     config['default'] = {
         'aws_access_key_id': credentials['AccessKeyId'],
         'aws_secret_access_key': credentials['SecretAccessKey'],
         'aws_session_token': credentials['SessionToken']
     }
 
-    with open(os.path.expanduser('~/.aws/credentials'), 'w') as f:
+    with open(os.path.expanduser(CREDENTIALS_PATH), 'w') as f:
         config.write(f)
 
 
@@ -42,12 +44,12 @@ def run_aws_command(command):
 def main():
     long_term_credentials = get_long_term_credentials()
     config = configparser.ConfigParser()
-    config.read(os.path.expanduser('~/.aws/credentials'))
+    config.read(os.path.expanduser(CREDENTIALS_PATH))
     config['default'] = {
         'aws_access_key_id': long_term_credentials['aws_access_key_id'],
         'aws_secret_access_key': long_term_credentials['aws_secret_access_key']
     }
-    with open(os.path.expanduser('~/.aws/credentials'), 'w') as f:
+    with open(os.path.expanduser(CREDENTIALS_PATH), 'w') as f:
         config.write(f)
 
     # Get caller identity
